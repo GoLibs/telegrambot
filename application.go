@@ -6,8 +6,10 @@ import (
 )
 
 type Fields struct {
-	Client *go_telegram_bot_api.TelegramBot
-	Update *structs.Update
+	Client     *go_telegram_bot_api.TelegramBot
+	Update     *structs.Update
+	IsSwitched bool
+	SwitchMenu func(menu string) error
 }
 
 type Application interface {

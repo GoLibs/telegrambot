@@ -19,11 +19,23 @@ type Bot struct {
 
 func NewBot(token string, application Application) (gotelbbot *Bot, err error) {
 	appVal := reflect.ValueOf(application)
-	el := appVal.Elem().FieldByName("Client")
-	if !el.IsValid() {
+
+	fields := appVal.Elem().FieldByName("Fields")
+	if !fields.IsValid() {
+		err = errors.New("fields_not_found")
+		return
+	}
+	if _, ok := fields.Interface().(Fields); !ok {
+		err = errors.New("fields_not_found")
+		return
+	}
+
+	clientField := appVal.Elem().FieldByName("Client")
+	if !clientField.IsValid() {
 		err = errors.New("client_field_not_found")
 		return
 	}
+
 	updateField := appVal.Elem().FieldByName("Update")
 	if !updateField.IsValid() {
 		err = errors.New("update_field_not_found")
@@ -35,11 +47,15 @@ func NewBot(token string, application Application) (gotelbbot *Bot, err error) {
 	if err != nil {
 		return
 	}
-	el.Set(reflect.ValueOf(client))
+	clientField.Set(reflect.ValueOf(client))
 	gotelbbot = &Bot{application: application}
 	gotelbbot.applicationType = reflect.TypeOf(application)
 	gotelbbot.applicationValue = appVal
-	gotelbbot.client = el
+
+	switchMenuField := appVal.Elem().FieldByName("SwitchMenu")
+	switchMenuField.Set(reflect.ValueOf(gotelbbot.SwitchMenu))
+
+	gotelbbot.client = clientField
 	gotelbbot.update = updateField
 	return
 }
@@ -59,6 +75,16 @@ func (gtb *Bot) GetUpdates() error {
 	for update := range updates {
 		go gtb.processUpdate(&update)
 	}
+	return nil
+}
+
+func (gtb *Bot) SwitchMenu(menuName string) error {
+	menu := gtb.applicationValue.MethodByName(menuName)
+	if !menu.IsValid() {
+		return errors.New("menu_not_found")
+	}
+	gtb.applicationValue.Elem().FieldByName("IsSwitched").Set(reflect.ValueOf(true))
+	menu.Call([]reflect.Value{})
 	return nil
 }
 
