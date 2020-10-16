@@ -42,6 +42,9 @@ func TestCreateBot(t *testing.T) {
 		fmt.Print(err)
 		return
 	}
+	if bot.ProcessFlags() {
+		return
+	}
 	err = bot.GetUpdates()
 	if err != nil {
 		fmt.Print(err)

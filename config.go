@@ -2,6 +2,7 @@ package telegrambot
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -28,6 +29,36 @@ type Language interface {
 	MainMenu() string
 }
 `
+}
+
+func (c *Config) addTextToLanguageFiles(text string) (err error) {
+	var arguments []string
+	split := strings.Split(text, ",")
+	if len(split) > 1 {
+		text = split[0]
+		arguments = split[1:]
+	}
+	langPath := "languages"
+	textContent := `
+
+func (%s %s) %s(%s) string {
+	return ""
+}
+`
+	for _, language := range c.Languages {
+		f, err := os.OpenFile(langPath+"/"+language+".go", os.O_RDWR, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		content, _ := ioutil.ReadAll(f)
+		str := string(content)
+		lastBracket := strings.LastIndex(str, "}")
+		f.Truncate(0)
+		f.Seek(0, 0)
+		f.WriteString(str[:lastBracket+1] + fmt.Sprintf(textContent, string(language[0]), strings.Title(language), text, strings.Join(arguments, ",")))
+		f.Close()
+	}
+	return
 }
 
 func (c *Config) createLanguageFiles() (err error) {

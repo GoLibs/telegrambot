@@ -2,8 +2,12 @@ package telegrambot
 
 import (
 	"errors"
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
+	"strings"
 
 	go_telegram_bot_api "github.com/GoLibs/telegram-bot-api"
 
@@ -57,9 +61,9 @@ func NewBot(token string, application Application, config *Config) (gotelbbot *B
 	switchMenuField.Set(reflect.ValueOf(gotelbbot.SwitchMenu))
 
 	gotelbbot.client = clientField
-
-	if config != nil {
-		fmt.Println(config.createLanguageFiles())
+	gotelbbot.Config = config
+	if gotelbbot.Config != nil {
+		fmt.Println(gotelbbot.Config.createLanguageFiles())
 	}
 	return
 }
@@ -145,6 +149,40 @@ func (gtb *Bot) processMenu(applicationValue reflect.Value) {
 	applicationValue.MethodByName("MainMenu").Call([]reflect.Value{})
 }
 
-func (bot Bot) name() {
+func (gtb *Bot) ProcessFlags() (hasFlags bool) {
+	var addText string
+	flag.StringVar(&addText, "text", "", "-text=WelcomeMessage")
+	flag.Parse()
 
+	if addText != "" {
+		langPath := "languages"
+		interfacePath := langPath + "/interface.go"
+		langInterfaceFile, err := os.OpenFile(interfacePath, os.O_RDWR, os.ModePerm)
+		if err != nil {
+			return
+		}
+		langInterface, err := ioutil.ReadAll(langInterfaceFile)
+		if err != nil {
+			return
+		}
+		str := string(langInterface)
+		lastBracket := strings.LastIndex(str, "}") - 1
+
+		var arguments []string
+		split := strings.Split(addText, ",")
+		textContent := split[0]
+		if len(split) > 1 {
+			arguments = split[1:]
+		}
+		str = str[:lastBracket] + "\n" + textContent + fmt.Sprintf("(%s) string", strings.Join(arguments, ",")) + "\n}"
+		langInterfaceFile.Truncate(0)
+		langInterfaceFile.Seek(0, 0)
+		langInterfaceFile.WriteString(str)
+		langInterfaceFile.Close()
+		hasFlags = true
+		if gtb.Config != nil {
+			gtb.Config.addTextToLanguageFiles(addText)
+		}
+	}
+	return
 }
