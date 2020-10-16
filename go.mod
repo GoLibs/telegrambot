@@ -1,4 +1,4 @@
-module tgbot
+module github.com/GoLibs/telegrambot
 
 go 1.14
 
