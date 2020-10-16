@@ -37,7 +37,7 @@ func (a *App) OnUpdateHandlers(update *structs.Update) {
 }
 
 func TestCreateBot(t *testing.T) {
-	bot, err := telegrambot.NewBot("1353022624:AAE3OYtWyn0NucYg9cDabdW9I48BNFQwCEs", &App{})
+	bot, err := telegrambot.NewBot("1353022624:AAE3OYtWyn0NucYg9cDabdW9I48BNFQwCEs", &App{}, &telegrambot.Config{Languages: []string{"english", "farsi"}})
 	if err != nil {
 		fmt.Print(err)
 		return

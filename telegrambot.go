@@ -2,6 +2,7 @@ package telegrambot
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 
 	go_telegram_bot_api "github.com/GoLibs/telegram-bot-api"
@@ -14,9 +15,10 @@ type Bot struct {
 	applicationValue reflect.Value
 	applicationType  reflect.Type
 	client           reflect.Value
+	Config           *Config
 }
 
-func NewBot(token string, application Application) (gotelbbot *Bot, err error) {
+func NewBot(token string, application Application, config *Config) (gotelbbot *Bot, err error) {
 	appVal := reflect.ValueOf(application)
 
 	fields := appVal.Elem().FieldByName("Fields")
@@ -55,6 +57,10 @@ func NewBot(token string, application Application) (gotelbbot *Bot, err error) {
 	switchMenuField.Set(reflect.ValueOf(gotelbbot.SwitchMenu))
 
 	gotelbbot.client = clientField
+
+	if config != nil {
+		fmt.Println(config.createLanguageFiles())
+	}
 	return
 }
 
@@ -137,4 +143,8 @@ func (gtb *Bot) processMenu(applicationValue reflect.Value) {
 		return
 	}
 	applicationValue.MethodByName("MainMenu").Call([]reflect.Value{})
+}
+
+func (bot Bot) name() {
+
 }
