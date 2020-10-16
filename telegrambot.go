@@ -95,6 +95,7 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 	updateField.Set(reflect.ValueOf(update))
 	switchMenuField := appValue.FieldByName("SwitchMenu")
 	switchMenuField.Set(reflect.ValueOf(gtb.SwitchMenu))
+	app.MethodByName("OnUpdateHandlers").Call([]reflect.Value{reflect.ValueOf(update)})
 	var chat *structs.Chat
 	if update.Message != nil {
 		/*if Update.Message.From != nil {
@@ -104,7 +105,6 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 
 		appValue.FieldByName("Client").MethodByName("SetRecipientChatId").Call([]reflect.Value{reflect.ValueOf(chat.Id)})
 		if chat.Type == "private" {
-			app.MethodByName("OnUpdateHandlers").Call([]reflect.Value{reflect.ValueOf(update)})
 			gtb.processMenu(app)
 			return
 		} /* else {
