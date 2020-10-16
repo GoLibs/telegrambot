@@ -91,6 +91,8 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 	appValue := app.Elem()
 	client := appValue.FieldByName("Client")
 	client.Set(gtb.client)
+	updateField := appValue.FieldByName("Update")
+	updateField.Set(reflect.ValueOf(update))
 	switchMenuField := appValue.FieldByName("SwitchMenu")
 	switchMenuField.Set(reflect.ValueOf(gtb.SwitchMenu))
 	var chat *structs.Chat
