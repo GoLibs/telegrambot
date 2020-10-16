@@ -150,11 +150,10 @@ func (gtb *Bot) processMenu(applicationValue reflect.Value) {
 }
 
 func (gtb *Bot) ProcessFlags() (hasFlags bool) {
-	var addText string
-	flag.StringVar(&addText, "text", "", "-text=WelcomeMessage")
+	var addText = flag.String("text", "", "-text=WelcomeMessage")
 	flag.Parse()
 
-	if addText != "" {
+	if addText != nil {
 		langPath := "languages"
 		interfacePath := langPath + "/interface.go"
 		langInterfaceFile, err := os.OpenFile(interfacePath, os.O_RDWR, os.ModePerm)
@@ -169,7 +168,7 @@ func (gtb *Bot) ProcessFlags() (hasFlags bool) {
 		lastBracket := strings.LastIndex(str, "}") - 1
 
 		var arguments []string
-		split := strings.Split(addText, ",")
+		split := strings.Split(*addText, ",")
 		textContent := split[0]
 		if len(split) > 1 {
 			arguments = split[1:]
@@ -181,7 +180,7 @@ func (gtb *Bot) ProcessFlags() (hasFlags bool) {
 		langInterfaceFile.Close()
 		hasFlags = true
 		if gtb.Config != nil {
-			gtb.Config.addTextToLanguageFiles(addText)
+			gtb.Config.addTextToLanguageFiles(*addText)
 		}
 	}
 	return
