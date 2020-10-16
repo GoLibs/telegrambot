@@ -14,7 +14,6 @@ type Bot struct {
 	applicationValue reflect.Value
 	applicationType  reflect.Type
 	client           reflect.Value
-	update           reflect.Value
 }
 
 func NewBot(token string, application Application) (gotelbbot *Bot, err error) {
@@ -56,7 +55,6 @@ func NewBot(token string, application Application) (gotelbbot *Bot, err error) {
 	switchMenuField.Set(reflect.ValueOf(gotelbbot.SwitchMenu))
 
 	gotelbbot.client = clientField
-	gotelbbot.update = updateField
 	return
 }
 
@@ -89,18 +87,23 @@ func (gtb *Bot) SwitchMenu(menuName string) error {
 }
 
 func (gtb *Bot) processUpdate(update *structs.Update) {
-	application := gtb.application
-	gtb.update.Set(reflect.ValueOf(update))
+	app := reflect.New(gtb.applicationType.Elem())
+	appValue := app.Elem()
+	client := appValue.FieldByName("Client")
+	client.Set(gtb.client)
+	switchMenuField := appValue.FieldByName("SwitchMenu")
+	switchMenuField.Set(reflect.ValueOf(gtb.SwitchMenu))
 	var chat *structs.Chat
 	if update.Message != nil {
 		/*if Update.Message.From != nil {
 			gtb.applicationValue.MethodByName("SetMessageUser").Call([]reflect.Value{reflect.ValueOf(Update.Message.From)})
 		}*/
 		chat = update.Message.Chat
-		gtb.client.MethodByName("SetRecipientChatId").Call([]reflect.Value{reflect.ValueOf(chat.Id)})
+
+		appValue.FieldByName("Client").MethodByName("SetRecipientChatId").Call([]reflect.Value{reflect.ValueOf(chat.Id)})
 		if chat.Type == "private" {
-			application.OnUpdateHandlers(update)
-			gtb.processMenu(application)
+			app.MethodByName("OnUpdateHandlers").Call([]reflect.Value{reflect.ValueOf(update)})
+			gtb.processMenu(app)
 			return
 		} /* else {
 			application.ProcessGroupUpdate()
@@ -111,9 +114,10 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 	}
 }
 
-func (gtb *Bot) processMenu(application Application) {
-	applicationValue := reflect.ValueOf(application)
-	menu := application.UserState()
+func (gtb *Bot) processMenu(applicationValue reflect.Value) {
+	// applicationValue := reflect.ValueOf(application)
+	menu := applicationValue.MethodByName("UserState").Call([]reflect.Value{})[0].Interface().(string)
+
 	_, ok := gtb.applicationType.MethodByName(menu)
 	if ok {
 		applicationValue.MethodByName(menu).Call([]reflect.Value{})
