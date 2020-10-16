@@ -9,7 +9,7 @@ import (
 	"github.com/GoLibs/telegram-bot-api/structs"
 )
 
-type GoTelBot struct {
+type Bot struct {
 	application      Application
 	applicationValue reflect.Value
 	applicationType  reflect.Type
@@ -17,7 +17,7 @@ type GoTelBot struct {
 	update           reflect.Value
 }
 
-func NewGoTelBot(token string, application Application) (gotelbbot *GoTelBot, err error) {
+func NewBot(token string, application Application) (gotelbbot *Bot, err error) {
 	appVal := reflect.ValueOf(application)
 	el := appVal.Elem().FieldByName("Client")
 	if !el.IsValid() {
@@ -36,7 +36,7 @@ func NewGoTelBot(token string, application Application) (gotelbbot *GoTelBot, er
 		return
 	}
 	el.Set(reflect.ValueOf(client))
-	gotelbbot = &GoTelBot{application: application}
+	gotelbbot = &Bot{application: application}
 	gotelbbot.applicationType = reflect.TypeOf(application)
 	gotelbbot.applicationValue = appVal
 	gotelbbot.client = el
@@ -44,11 +44,11 @@ func NewGoTelBot(token string, application Application) (gotelbbot *GoTelBot, er
 	return
 }
 
-func (gtb *GoTelBot) ListenWebHook(address string) {
+func (gtb *Bot) ListenWebHook(address string) {
 	gtb.client.MethodByName("GetUpdates").Call([]reflect.Value{})
 }
 
-func (gtb *GoTelBot) GetUpdates() error {
+func (gtb *Bot) GetUpdates() error {
 	getUpdates := gtb.client.MethodByName("GetUpdates").Call([]reflect.Value{})
 	values := gtb.client.MethodByName("GetUpdatesChannel").Call([]reflect.Value{getUpdates[0]})
 	updates := values[0].Interface().(structs.UpdatesChannel)
@@ -62,7 +62,7 @@ func (gtb *GoTelBot) GetUpdates() error {
 	return nil
 }
 
-func (gtb *GoTelBot) processUpdate(update *structs.Update) {
+func (gtb *Bot) processUpdate(update *structs.Update) {
 	application := gtb.application
 	gtb.update.Set(reflect.ValueOf(update))
 	var chat *structs.Chat
@@ -85,7 +85,7 @@ func (gtb *GoTelBot) processUpdate(update *structs.Update) {
 	}
 }
 
-func (gtb *GoTelBot) processMenu(application Application) {
+func (gtb *Bot) processMenu(application Application) {
 	applicationValue := reflect.ValueOf(application)
 	menu := application.UserState()
 	_, ok := gtb.applicationType.MethodByName(menu)
