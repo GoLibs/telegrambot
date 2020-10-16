@@ -153,7 +153,7 @@ func (gtb *Bot) ProcessFlags() (hasFlags bool) {
 	var addText = flag.String("text", "", "-text=WelcomeMessage")
 	flag.Parse()
 
-	if addText != nil {
+	if addText != nil && *addText != "" {
 		langPath := "languages"
 		interfacePath := langPath + "/interface.go"
 		langInterfaceFile, err := os.OpenFile(interfacePath, os.O_RDWR, os.ModePerm)
