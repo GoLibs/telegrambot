@@ -63,7 +63,7 @@ func NewBot(token string, application Application, config *Config) (gotelbbot *B
 	gotelbbot.client = clientField
 	gotelbbot.Config = config
 	if gotelbbot.Config != nil {
-		fmt.Println(gotelbbot.Config.createLanguageFiles())
+		gotelbbot.Config.createLanguageFiles()
 	}
 	return
 }

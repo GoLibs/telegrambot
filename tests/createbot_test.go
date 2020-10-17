@@ -13,6 +13,10 @@ type App struct {
 	telegrambot.Fields
 }
 
+func (a *App) ProcessCallbackQuery(query *structs.CallbackQuery) {
+	return
+}
+
 func (a *App) RainMenu() {
 	fmt.Println(a.IsSwitched)
 	if !a.IsSwitched {
