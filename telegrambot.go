@@ -134,6 +134,8 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 		}*/
 	} else if update.CallbackQuery != nil && update.CallbackQuery.Message != nil {
 		chat = update.Message.Chat
+		app.MethodByName("ProcessCallbackQuery").Call([]reflect.Value{reflect.ValueOf(update.CallbackQuery)})
+		return
 	}
 }
 

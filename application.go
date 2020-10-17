@@ -15,5 +15,6 @@ type Fields struct {
 type Application interface {
 	UserState() string
 	OnUpdateHandlers(update *structs.Update)
+	ProcessCallbackQuery(query *structs.CallbackQuery)
 	MainMenu()
 }
