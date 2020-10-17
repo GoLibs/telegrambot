@@ -22,7 +22,7 @@ type Bot struct {
 	Config           *Config
 }
 
-func NewBot(token string, application Application, config *Config) (gotelbbot *Bot, err error) {
+func NewBot(token string, application Application, config *Config) (gotelbbot *Bot, client *go_telegram_bot_api.TelegramBot, err error) {
 	appVal := reflect.ValueOf(application)
 
 	fields := appVal.Elem().FieldByName("Fields")
@@ -47,7 +47,6 @@ func NewBot(token string, application Application, config *Config) (gotelbbot *B
 		return
 	}
 
-	var client *go_telegram_bot_api.TelegramBot
 	client, err = go_telegram_bot_api.NewTelegramBot(token)
 	if err != nil {
 		return
