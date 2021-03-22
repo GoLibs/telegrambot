@@ -112,8 +112,8 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 		return nil
 	}*/
 
-	/*switchMenuField := appValue.FieldByName("SwitchMenu")
-	switchMenuField.Set(reflect.ValueOf(switchMenu))*/
+	switchMenuField := appValue.FieldByName("SwitchMenu")
+	switchMenuField.Set(reflect.ValueOf(gtb.SwitchMenu))
 
 	app.MethodByName("OnUpdateHandlers").Call([]reflect.Value{reflect.ValueOf(update)})
 	var chat *structs.Chat
