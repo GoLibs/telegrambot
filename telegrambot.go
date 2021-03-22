@@ -90,7 +90,7 @@ func (gtb *Bot) SwitchMenu(menuName string) error {
 	if !menu.IsValid() {
 		return errors.New("menu_not_found")
 	}
-	gtb.applicationValue.Elem().FieldByName("IsSwitched").Set(reflect.ValueOf(true))
+	gtb.applicationValue.Elem().FieldByName("Fields").FieldByName("IsSwitched").Set(reflect.ValueOf(true))
 	menu.Call([]reflect.Value{})
 	return nil
 }
