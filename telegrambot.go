@@ -102,18 +102,18 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 	client.Set(gtb.client)
 	updateField := appValue.FieldByName("Update")
 	updateField.Set(reflect.ValueOf(update))
-	/*	switchMenu := func(menuName string) error {
+	switchMenu := func(menuName string) error {
 		menu := app.MethodByName(menuName)
 		if !menu.IsValid() {
 			return errors.New("menu_not_found")
 		}
-		gtb.applicationValue.Elem().FieldByName("IsSwitched").Set(reflect.ValueOf(true))
+		gtb.applicationValue.Elem().FieldByName("Fields").FieldByName("IsSwitched").Set(reflect.ValueOf(true))
 		menu.Call([]reflect.Value{})
 		return nil
-	}*/
+	}
 
 	switchMenuField := appValue.FieldByName("SwitchMenu")
-	switchMenuField.Set(reflect.ValueOf(gtb.SwitchMenu))
+	switchMenuField.Set(reflect.ValueOf(switchMenu))
 
 	app.MethodByName("OnUpdateHandlers").Call([]reflect.Value{reflect.ValueOf(update)})
 	var chat *structs.Chat
