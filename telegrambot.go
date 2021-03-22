@@ -107,7 +107,7 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 		if !menu.IsValid() {
 			return errors.New("menu_not_found")
 		}
-		gtb.applicationValue.Elem().FieldByName("Fields").FieldByName("IsSwitched").Set(reflect.ValueOf(true))
+		appValue.FieldByName("IsSwitched").Set(reflect.ValueOf(true))
 		menu.Call([]reflect.Value{})
 		return nil
 	}
