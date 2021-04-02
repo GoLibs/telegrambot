@@ -76,7 +76,15 @@ func NewBot(token string, application Application, config *Config) (gotelbbot *B
 }
 
 func (gtb *Bot) ListenWebHook(address string) {
-	gtb.client.MethodByName("GetUpdates").Call([]reflect.Value{})
+	go gtb.client.MethodByName("ListenWebhook").Call([]reflect.Value{
+		reflect.ValueOf(address),
+	})
+
+	updatesChan := gtb.client.MethodByName("Updates").Call([]reflect.Value{})
+	for update := range updatesChan[0].Interface().(chan *structs.Update) {
+		go gtb.processUpdate(update)
+	}
+	return
 }
 
 func (gtb *Bot) GetUpdates() error {
