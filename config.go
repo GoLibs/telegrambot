@@ -11,7 +11,7 @@ type Config struct {
 	Languages []string
 }
 
-func (c *Config) langFile(langName string) string {
+func (c *Config) langFileData(langName string) string {
 	return fmt.Sprintf(`package languages
 
 type %s struct {
@@ -22,13 +22,61 @@ func (%s %s) MainMenu() string {
 }`, strings.Title(langName), string(langName[0]), strings.Title(langName))
 }
 
-func (c *Config) langInterface() string {
+func (c *Config) langInterfaceData() string {
 	return `package languages
 
 type Language interface {
 	MainMenu() string
 }
 `
+}
+
+func (c *Config) appData(appName string) string {
+	appName = strings.ToUpper(appName[0:1]) + strings.ToLower(appName[1:])
+	shortName := strings.ToLower(appName[0:1])
+	text := `package app
+
+import (
+	"github.com/GoLibs/telegram-bot-api/structs"
+	"github.com/GoLibs/telegrambot"
+)
+
+type %NAME% struct {
+	telegrambot.Fields
+	l    languages.Language
+}
+
+func (%SHORT% *%NAME%) UserState() string {
+	return "MainMenu"
+}
+
+func (%SHORT% *%NAME%) OnUpdateHandlers(update *structs.Update) {
+	%SHORT%.l = languages.English{}
+	if update.Message == nil {
+		return
+	}
+	if update.Message.From != nil && a.User == nil {
+		// TODO: Create or Initialise User Here
+	} else {
+		// TODO: Refresh User State Here
+	}
+}
+
+func  (%SHORT% *%NAME%) ProcessCallbackQuery(query *structs.CallbackQuery) {
+	// commit
+}
+
+func(%SHORT% *%NAME%) MainMenu() {
+	// TODO: Set User State
+	if !a.IsSwitched {
+		// TODO:
+	}
+	%SHORT%.Client.Send(%SHORT%.Message().SetText("Hi"))
+}
+`
+	text = strings.ReplaceAll(text, "%SHORT%", shortName)
+	text = strings.ReplaceAll(text, "%NAME%", appName)
+	return text
 }
 
 func (c *Config) addTextToLanguageFiles(text string) (err error) {
@@ -46,7 +94,7 @@ func (%s %s) %s(%s) string {
 }
 `
 	for _, language := range c.Languages {
-		f, err := os.OpenFile(langPath+"/"+language+".go", os.O_RDWR, os.ModePerm)
+		f, err := os.OpenFile(langPath+"/"+language+".go", os.O_RDWR, 644)
 		if err != nil {
 			return err
 		}
@@ -69,22 +117,35 @@ func (c *Config) createLanguageFiles() (err error) {
 		return nil
 	}
 	if _, err := os.Stat(langPath); os.IsNotExist(err) {
-		os.Mkdir(langPath, os.ModePerm)
+		os.Mkdir(langPath, 644)
 	}
-	o, err := os.OpenFile(langInterfaceFilePath, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModePerm)
+	o, err := os.OpenFile(langInterfaceFilePath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 644)
 	if err != nil {
 		return err
 	}
-	o.Write([]byte(c.langInterface()))
+	o.Write([]byte(c.langInterfaceData()))
 	o.Close()
 	for _, language := range c.Languages {
 		langPath := langPath + fmt.Sprintf("/%s.go", language)
-		o, err := os.OpenFile(langPath, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModePerm)
+		o, err := os.OpenFile(langPath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 644)
 		if err != nil {
 			return err
 		}
-		o.Write([]byte(c.langFile(language)))
+		o.Write([]byte(c.langFileData(language)))
 		o.Close()
 	}
 	return nil
+}
+
+func (c *Config) init(appName string) (err error) {
+	appPath := "app"
+	if _, err = os.Stat(appPath); os.IsNotExist(err) {
+		err = os.MkdirAll(appPath, 644)
+		if err != nil {
+			return
+		}
+	}
+	filename := strings.ToLower(appName)
+	err = ioutil.WriteFile(appName+"/"+filename+".go", []byte(c.appData(appName)), 644)
+	return
 }

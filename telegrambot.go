@@ -46,13 +46,18 @@ func NewBot(token string, application Application, config *Config) (gotelbbot *B
 		err = errors.New("update_field_not_found")
 		return
 	}
-
+	gotelbbot = &Bot{application: application}
+	if gotelbbot.ProcessFlags() {
+		gotelbbot = nil
+		client = nil
+		err = nil
+		return
+	}
 	client, err = go_telegram_bot_api.NewTelegramBot(token)
 	if err != nil {
 		return
 	}
 	clientField.Set(reflect.ValueOf(client))
-	gotelbbot = &Bot{application: application}
 	gotelbbot.applicationType = reflect.TypeOf(application)
 	gotelbbot.applicationValue = appVal
 
@@ -151,13 +156,15 @@ func (gtb *Bot) processMenu(applicationValue reflect.Value) {
 }
 
 func (gtb *Bot) ProcessFlags() (hasFlags bool) {
-	var addText = flag.String("text", "", "-text=WelcomeMessage")
+	var addText = flag.String("text", "", "--text=WelcomeMessage")
+	var init = flag.String("init", "", "--init=Bot")
 	flag.Parse()
 
 	if addText != nil && *addText != "" {
+		hasFlags = true
 		langPath := "languages"
 		interfacePath := langPath + "/interface.go"
-		langInterfaceFile, err := os.OpenFile(interfacePath, os.O_RDWR, os.ModePerm)
+		langInterfaceFile, err := os.OpenFile(interfacePath, os.O_RDWR, 644)
 		if err != nil {
 			return
 		}
@@ -179,10 +186,20 @@ func (gtb *Bot) ProcessFlags() (hasFlags bool) {
 		langInterfaceFile.Seek(0, 0)
 		langInterfaceFile.WriteString(str)
 		langInterfaceFile.Close()
-		hasFlags = true
 		if gtb.Config != nil {
 			gtb.Config.addTextToLanguageFiles(*addText)
 		}
+		return
+	}
+	if init != nil && *init != "" {
+		hasFlags = true
+		if gtb.Config != nil {
+			err := gtb.Config.init(*init)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+		return
 	}
 	return
 }
