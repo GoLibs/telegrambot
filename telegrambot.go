@@ -26,11 +26,11 @@ func NewBot(token string, application Application, config *Config) (gotelbbot *B
 	if config == nil {
 		config = &Config{Languages: []string{"English"}}
 	}
-	gotelbbot = &Bot{application: application}
+	gotelbbot = &Bot{application: application, Config: config}
 	if gotelbbot.processFlags() {
 		gotelbbot = nil
 		client = nil
-		err = nil
+		err = errors.New("returned from flag process")
 		return
 	}
 	appVal := reflect.ValueOf(application)
@@ -69,7 +69,6 @@ func NewBot(token string, application Application, config *Config) (gotelbbot *B
 	switchMenuField.Set(reflect.ValueOf(gotelbbot.SwitchMenu))
 
 	gotelbbot.client = clientField
-	gotelbbot.Config = config
 	if gotelbbot.Config != nil {
 		gotelbbot.Config.createLanguageFiles()
 	}
@@ -195,6 +194,7 @@ func (gtb *Bot) processFlags() (hasFlags bool) {
 		}
 		return
 	}
+
 	if init != nil && *init != "" {
 		hasFlags = true
 		if gtb.Config != nil {

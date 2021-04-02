@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -44,6 +45,7 @@ import (
 type %NAME% struct {
 	telegrambot.Fields
 	l    languages.Language
+	User interface{} // TODO: Set User Model Here 
 }
 
 func (%SHORT% *%NAME%) UserState() string {
@@ -55,7 +57,7 @@ func (%SHORT% *%NAME%) OnUpdateHandlers(update *structs.Update) {
 	if update.Message == nil {
 		return
 	}
-	if update.Message.From != nil && a.User == nil {
+	if update.Message.From != nil && %SHORT%.User == nil {
 		// TODO: Create or Initialise User Here
 	} else {
 		// TODO: Refresh User State Here
@@ -68,10 +70,10 @@ func  (%SHORT% *%NAME%) ProcessCallbackQuery(query *structs.CallbackQuery) {
 
 func(%SHORT% *%NAME%) MainMenu() {
 	// TODO: Set User State
-	if !a.IsSwitched {
+	if !%SHORT%.IsSwitched {
 		// TODO:
 	}
-	%SHORT%.Client.Send(%SHORT%.Message().SetText("Hi"))
+	%SHORT%.Client.Send(%SHORT%.Client.Message().SetText("Hi"))
 }
 `
 	text = strings.ReplaceAll(text, "%SHORT%", shortName)
@@ -126,7 +128,7 @@ func (c *Config) createLanguageFiles() (err error) {
 	o.Write([]byte(c.langInterfaceData()))
 	o.Close()
 	for _, language := range c.Languages {
-		langPath := langPath + fmt.Sprintf("/%s.go", language)
+		langPath := langPath + fmt.Sprintf("/%s.go", strings.ToLower(language))
 		o, err := os.OpenFile(langPath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 644)
 		if err != nil {
 			return err
@@ -138,6 +140,7 @@ func (c *Config) createLanguageFiles() (err error) {
 }
 
 func (c *Config) init(appName string) (err error) {
+	c.createLanguageFiles()
 	appPath := "app"
 	if _, err = os.Stat(appPath); os.IsNotExist(err) {
 		err = os.MkdirAll(appPath, 644)
@@ -146,6 +149,9 @@ func (c *Config) init(appName string) (err error) {
 		}
 	}
 	filename := strings.ToLower(appName)
-	err = ioutil.WriteFile(appName+"/"+filename+".go", []byte(c.appData(appName)), 644)
+	err = ioutil.WriteFile("app/"+filename+".go", []byte(c.appData(appName)), 644)
+	if err == nil {
+		exec.Command("gofmt", "./...").Run()
+	}
 	return
 }
