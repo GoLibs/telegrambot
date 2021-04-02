@@ -23,6 +23,16 @@ type Bot struct {
 }
 
 func NewBot(token string, application Application, config *Config) (gotelbbot *Bot, client *go_telegram_bot_api.TelegramBot, err error) {
+	if config == nil {
+		config = &Config{Languages: []string{"English"}}
+	}
+	gotelbbot = &Bot{application: application}
+	if gotelbbot.processFlags() {
+		gotelbbot = nil
+		client = nil
+		err = nil
+		return
+	}
 	appVal := reflect.ValueOf(application)
 
 	fields := appVal.Elem().FieldByName("Fields")
@@ -46,13 +56,7 @@ func NewBot(token string, application Application, config *Config) (gotelbbot *B
 		err = errors.New("update_field_not_found")
 		return
 	}
-	gotelbbot = &Bot{application: application}
-	if gotelbbot.ProcessFlags() {
-		gotelbbot = nil
-		client = nil
-		err = nil
-		return
-	}
+
 	client, err = go_telegram_bot_api.NewTelegramBot(token)
 	if err != nil {
 		return
@@ -155,7 +159,7 @@ func (gtb *Bot) processMenu(applicationValue reflect.Value) {
 	applicationValue.MethodByName("MainMenu").Call([]reflect.Value{})
 }
 
-func (gtb *Bot) ProcessFlags() (hasFlags bool) {
+func (gtb *Bot) processFlags() (hasFlags bool) {
 	var addText = flag.String("text", "", "--text=WelcomeMessage")
 	var init = flag.String("init", "", "--init=Bot")
 	flag.Parse()
