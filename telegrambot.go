@@ -114,6 +114,7 @@ func (gtb *Bot) SwitchMenu(menuName string) error {
 }
 
 func (gtb *Bot) processUpdate(update *structs.Update) {
+	fmt.Println("processing update")
 	app := reflect.New(gtb.applicationType.Elem())
 	appValue := app.Elem()
 	client := appValue.FieldByName("Client")
