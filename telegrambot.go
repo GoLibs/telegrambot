@@ -81,7 +81,7 @@ func (gtb *Bot) ListenWebHook(address string) {
 	})
 
 	updatesChan := gtb.client.MethodByName("Updates").Call([]reflect.Value{})
-	fmt.Println(updatesChan)
+	fmt.Println("here", updatesChan)
 	for update := range updatesChan[0].Interface().(chan *structs.Update) {
 		fmt.Println("hereeee")
 		go gtb.processUpdate(update)
