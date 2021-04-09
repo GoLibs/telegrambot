@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"reflect"
 	"strings"
 
@@ -205,7 +206,10 @@ func (gtb *Bot) processFlags() (hasFlags bool) {
 		langInterfaceFile.WriteString(str)
 		langInterfaceFile.Close()
 		if gtb.Config != nil {
-			gtb.Config.addTextToLanguageFiles(*addText)
+			err = gtb.Config.addTextToLanguageFiles(*addText)
+			if err == nil {
+				exec.Command("gofmt", "-s", "-w", "./..").Run()
+			}
 		}
 		return
 	}

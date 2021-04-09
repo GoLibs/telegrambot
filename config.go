@@ -47,7 +47,7 @@ type %s struct {
 
 func (%s %s) MainMenu() string {
 	return "Welcome to Main Menu"
-}`, strings.Title(langName), string(langName[0]), strings.Title(langName))
+}`, strings.Title(langName), strings.ToLower(string(langName[0])), strings.Title(langName))
 }
 
 func (c *Config) langInterfaceData() string {
@@ -122,8 +122,9 @@ func (%s %s) %s(%s) string {
 	return ""
 }
 `
+
 	for _, language := range c.Languages {
-		f, err := os.OpenFile(langPath+"/"+language+".go", os.O_RDWR, 644)
+		f, err := os.OpenFile(langPath+string(os.PathSeparator)+language+".go", os.O_RDWR, 644)
 		if err != nil {
 			return err
 		}
@@ -132,7 +133,7 @@ func (%s %s) %s(%s) string {
 		lastBracket := strings.LastIndex(str, "}")
 		f.Truncate(0)
 		f.Seek(0, 0)
-		f.WriteString(str[:lastBracket+1] + fmt.Sprintf(textContent, string(language[0]), strings.Title(language), text, strings.Join(arguments, ",")))
+		f.WriteString(str[:lastBracket+1] + fmt.Sprintf(textContent, strings.ToLower(string(language[0])), strings.Title(language), text, strings.Join(arguments, ",")))
 		f.Close()
 	}
 	return
@@ -140,7 +141,7 @@ func (%s %s) %s(%s) string {
 
 func (c *Config) createLanguageFiles() (err error) {
 	langPath := "languages"
-	langInterfaceFilePath := langPath + "/interface.go"
+	langInterfaceFilePath := langPath + string(os.PathSeparator) + "interface.go"
 	_, err = os.Stat(langInterfaceFilePath)
 	if err == nil {
 		return nil
@@ -155,7 +156,7 @@ func (c *Config) createLanguageFiles() (err error) {
 	o.Write([]byte(c.langInterfaceData()))
 	o.Close()
 	for _, language := range c.Languages {
-		langPath := langPath + fmt.Sprintf("/%s.go", strings.ToLower(language))
+		langPath := langPath + string(os.PathSeparator) + fmt.Sprintf("%s.go", strings.ToLower(language))
 		o, err := os.OpenFile(langPath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 644)
 		if err != nil {
 			return err
