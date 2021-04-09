@@ -5,11 +5,38 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
 type Config struct {
 	Languages []string
+}
+
+type langFns struct {
+	Name    string
+	Inputs  string
+	Outputs string
+}
+
+func (c *Config) addLangData(langName string, fns []langFns) string {
+	var fnStrings []string
+	for _, fn := range fns {
+		s := fmt.Sprintf(`
+	func (%s %s) %s(%s) %s {
+		return ""
+	}
+`, strings.ToLower(langName[0:1]), strings.Title(langName), fn.Name, fn.Inputs, fn.Outputs)
+		fnStrings = append(fnStrings, s)
+	}
+	return fmt.Sprintf(`package languages
+
+type %s struct {
+
+}
+
+%s
+`, strings.Title(langName), strings.Join(fnStrings, "\r\n"))
 }
 
 func (c *Config) langFileData(langName string) string {
@@ -151,7 +178,35 @@ func (c *Config) init(appName string) (err error) {
 	filename := strings.ToLower(appName)
 	err = ioutil.WriteFile("app/"+filename+".go", []byte(c.appData(appName)), 644)
 	if err == nil {
-		exec.Command("gofmt", "./...").Run()
+		exec.Command("gofmt", "-s", "-w", "./..").Run()
+	}
+	return
+}
+
+func (c *Config) addLanguage(langName string) (err error) {
+	langPath := "languages"
+	interfacePath := langPath + string(os.PathSeparator) + "interface.go"
+	addLangPath := langPath + string(os.PathSeparator) + strings.ToLower(langName) + ".go"
+	var data []byte
+	data, err = ioutil.ReadFile(interfacePath)
+	if err != nil {
+		return
+	}
+	var fns []langFns
+	r := regexp.MustCompile(`[\s\S.]+?(.+?)\((.*?)\)\s+?(.*)`)
+	for _, fn := range r.FindAllStringSubmatch(string(data), -1) {
+		fnName := fn[1]
+		args := fn[2]
+		output := fn[3]
+		fns = append(fns, langFns{
+			Name:    fnName,
+			Inputs:  args,
+			Outputs: output,
+		})
+	}
+	err = ioutil.WriteFile(addLangPath, []byte(c.addLangData(langName, fns)), os.ModePerm)
+	if err == nil {
+		exec.Command("gofmt", "-s", "-w", "./..").Run()
 	}
 	return
 }

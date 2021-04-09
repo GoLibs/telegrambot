@@ -81,7 +81,6 @@ func (gtb *Bot) ListenWebHook(address string) {
 	})
 
 	updatesChan := gtb.client.MethodByName("Updates").Call([]reflect.Value{})
-	fmt.Println("here", updatesChan)
 	for update := range updatesChan[0].Interface().(chan *structs.Update) {
 		fmt.Println("hereeee")
 		go gtb.processUpdate(update)
@@ -114,7 +113,6 @@ func (gtb *Bot) SwitchMenu(menuName string) error {
 }
 
 func (gtb *Bot) processUpdate(update *structs.Update) {
-	fmt.Println("processing update")
 	app := reflect.New(gtb.applicationType.Elem())
 	appValue := app.Elem()
 	client := appValue.FieldByName("Client")
@@ -171,9 +169,15 @@ func (gtb *Bot) processMenu(applicationValue reflect.Value) {
 
 func (gtb *Bot) processFlags() (hasFlags bool) {
 	var addText = flag.String("text", "", "--text=WelcomeMessage")
+	var addLang = flag.String("lang", "", "--lang=Farsi")
 	var init = flag.String("init", "", "--init=Bot")
 	flag.Parse()
 
+	if addLang != nil && *addLang != "" {
+		hasFlags = true
+		gtb.Config.addLanguage(*addLang)
+		return
+	}
 	if addText != nil && *addText != "" {
 		hasFlags = true
 		langPath := "languages"
