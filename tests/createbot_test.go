@@ -14,6 +14,7 @@ type App struct {
 }
 
 func (a *App) ProcessGroupUpdate(update *structs.Update) {
+	// commit
 	return
 }
 
