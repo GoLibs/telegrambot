@@ -13,6 +13,10 @@ type App struct {
 	telegrambot.Fields
 }
 
+func (a *App) ProcessGroupUpdate(update *structs.Update) {
+	return
+}
+
 func (a *App) ProcessCallbackQuery(query *structs.CallbackQuery) {
 	return
 }
