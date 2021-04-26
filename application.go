@@ -16,5 +16,6 @@ type Application interface {
 	UserState() string
 	OnUpdateHandlers(update *structs.Update)
 	ProcessCallbackQuery(query *structs.CallbackQuery)
+	ProcessGroupUpdate(update *structs.Update)
 	MainMenu()
 }

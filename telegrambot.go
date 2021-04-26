@@ -145,10 +145,10 @@ func (gtb *Bot) processUpdate(update *structs.Update) {
 		if chat.Type == "private" {
 			gtb.processMenu(app)
 			return
-		} /* else {
-			application.ProcessGroupUpdate()
+		} else {
+			app.MethodByName("ProcessGroupUpdate").Call([]reflect.Value{reflect.ValueOf(update)})
 			return
-		}*/
+		}
 	} else if update.CallbackQuery != nil && update.CallbackQuery.Message != nil {
 		chat = update.CallbackQuery.Message.Chat
 		app.MethodByName("ProcessCallbackQuery").Call([]reflect.Value{reflect.ValueOf(update.CallbackQuery)})

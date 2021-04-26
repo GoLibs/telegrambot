@@ -95,6 +95,10 @@ func  (%SHORT% *%NAME%) ProcessCallbackQuery(query *structs.CallbackQuery) {
 	// commit
 }
 
+func  (%SHORT% *%NAME%) ProcessGroupUpdate(update *structs.Update) {
+	// commit
+}
+
 func(%SHORT% *%NAME%) MainMenu() {
 	// TODO: Set User State
 	if !%SHORT%.IsSwitched {
